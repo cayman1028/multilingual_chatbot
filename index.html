@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>アーバンハーモニー東京 - ホテルチャットボット</title>
+ <!-- ===== セクション1: HTML構造とページスタイル ===== -->
+ <style>
+   @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+   body {
+     font-family: 'Poppins', Arial, sans-serif;
+     margin: 0;
+     padding: 0;
+     background-color: #f5f5f5;
+     min-height: 100vh;
+     display: flex;
+     flex-direction: column;
+     justify-content: center;
+     align-items: center;
+   }
+
+   .page-content {
+     max-width: 800px;
+     margin: 0 auto;
+     padding: 20px;
+     text-align: center;
+   }
+
+   h1 {
+     color: #9acd32;
+     margin-bottom: 20px;
+   }
+
+   p {
+     margin-bottom: 30px;
+     line-height: 1.6;
+   }
+
+   /* チャットボットのスタイル */
+   .chatbot-container {
+     position: fixed;
+     bottom: 20px;
+     right: 20px;
+     z-index: 9999;
+     font-family: Arial, sans-serif;
+   }
+
+   .chatbot-button {
+     width: 60px;
+     height: 60px;
+     border-radius: 50%;
+     background: #9acd32; /* 黄緑色 */
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     cursor: pointer;
+     position: relative;
+     z-index: 10000;
+     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+   }
+
+   .chatbot-icon {
+     width: 30px;
+     height: 30px;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     position: relative;
+   }
+
+   .chatbot-speech-bubble {
+     position: relative;
+     width: 30px;
+     height: 30px;
+     background-color: white;
+     border-radius: 50%;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+   }
+
+   .chatbot-speech-bubble:before {
+     content: "";
+     position: absolute;
+     bottom: -5px;
+     left: 2px;
+     width: 10px;
+     height: 10px;
+     background-color: white;
+     clip-path: polygon(0 0, 100% 0, 0 100%);
+     transform: rotate(45deg);
+   }
+
+   .chatbot-dots {
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     gap: 3px;
+   }
+
+   .chatbot-dot {
+     width: 4px;
+     height: 4px;
+     background-color: #9acd32;
+     border-radius: 50%;
+     animation: pulse 1.5s infinite;
+   }
+
+   .chatbot-dot:nth-child(2) {
+     animation-delay: 0.2s;
+   }
+
+   .chatbot-dot:nth-child(3) {
+     animation-delay: 0.4s;
+   }
+
+   @keyframes pulse {
+     0% {
+       transform: scale(1);
+       opacity: 1;
+     }
+     50% {
+       transform: scale(1.2);
+       opacity: 0.7;
+     }
+     100% {
+       transform: scale(1);
+       opacity: 1;
+     }
+   }
+
+   .chatbot-window {
+     position: absolute;
+     bottom: 80px;
+     right: 0;
+     width: 350px;
+     height: 500px;
+     background-color: white;
+     border-radius: 10px;
+     box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+     display: none;
+     flex-direction: column;
+     overflow: hidden;
+     border: 1px solid #eee;
+     z-index: 10000;
+   }
+
+   .chatbot-header {
+     padding: 15px;
+     background: #9acd32;
+     color: white;
+     font-weight: normal;
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+   }
+
+   .chatbot-close {
+     cursor: pointer;
+     font-size: 20px;
+     padding: 10px;
+     margin: -10px;
+   }
+
+   .chatbot-messages {
+     flex: 1;
+     padding: 15px;
+     overflow-y: auto;
+     background-color: #f5f5f5;
+   }
+
+   .chatbot-message {
+     margin-bottom: 15px;
+     max-width: 85%;
+     padding: 10px;
+     border-radius: 5px;
+     line-height: 1.4;
+     white-space: pre-line;
+   }
+
+   .chatbot-message-user {
+     background: #9acd32;
+     color: white;
+     margin-left: auto;
+   }
+
+   .chatbot-message-bot {
+     background-color: white;
+     color: #333;
+     border: 1px solid #eee;
+   }
+
+   .chatbot-typing {
+     display: flex;
+     align-items: center;
+     margin-bottom: 15px;
+     max-width: 85%;
+     padding: 10px;
+     border-radius: 5px;
+     background-color: white;
+   }
+
+   .chatbot-typing-dot {
+     width: 6px;
+     height: 6px;
+     background-color: #9acd32;
+     border-radius: 50%;
+     margin: 0 2px;
+     animation: typingPulse 1s infinite ease-in-out;
+   }
+
+   .chatbot-typing-dot:nth-child(1) {
+     animation-delay: 0s;
+   }
+
+   .chatbot-typing-dot:nth-child(2) {
+     animation-delay: 0.2s;
+   }
+
+   .chatbot-typing-dot:nth-child(3) {
+     animation-delay: 0.4s;
+   }
+
+   @keyframes typingPulse {
+     0%,
+     100% {
+       transform: translateY(0);
+     }
+     50% {
+       transform: translateY(-10px);
+     }
+   }
+
+   .chatbot-input-container {
+     padding: 10px;
+     border-top: 1px solid #eee;
+     background-color: white;
+     display: flex;
+     align-items: center;
+   }
+
+   .chatbot-input {
+     flex: 1;
+     border: 1px solid #eee;
+     border-radius: 20px;
+     padding: 8px 15px;
+     font-size: 14px;
+     outline: none;
+   }
+
+   .chatbot-input:focus {
+     border-color: #9acd32;
+   }
+
+   .chatbot-send-button {
+     background: #9acd32;
+     color: white;
+     border: none;
+     border-radius: 50%;
+     width: 36px;
+     height: 36px;
+     margin-left: 10px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     cursor: pointer;
+   }
+
+   /* 提案質問のスタイル */
+   .chatbot-suggestions {
+     width: 100%;
+     max-width: 100%;
+   }
+
+   .chatbot-suggestion {
+     margin-top: 8px;
+     padding: 8px 12px;
+     background-color: #f0f8e0;
+     border-radius: 15px;
+     display: inline-block;
+     cursor: pointer;
+     font-size: 13px;
+     transition: background-color 0.2s;
+   }
+
+   .chatbot-suggestion:hover {
+     background-color: #e0f0c0;
+   }
+
+   @media (max-width: 480px) {
+     .chatbot-window {
+       width: calc(100vw - 40px);
+       height: 400px;
+     }
+   }
+ </style>
+</head>
+<body>
+ <div class="page-content">
+   <h1>アーバンハーモニー東京</h1>
+   <p>このページでは、アーバンハーモニー東京のチャットボットをお試しいただけます。<br>右下のチャットアイコンをクリックして、チャットボットを起動してください。</p>
+ </div>
+
+ <script>
+ // チャットボットのデータを分割して管理
+ const chatbotData = {
+   name: "アーバンハーモニー東京 コンシェルジュ",
+   welcomeMessage: "こんにちは！アーバンハーモニー東京のコンシェルジュです。ホテルや周辺情報について何でもお気軽にお尋ねください。",
+   fallbackMessage: "申し訳ありません、その質問にはまだ答えられないようです。別の言い方で質問していただくか、「何に答えられますか？」とお尋ねいただければ、お答えできる内容をご案内します。何でもお気軽にお尋ねください。"
+ };
+
+ // ホテル基本情報
+ const hotelInfo = [
+   {
+     id: "hotel_info",
+     keywords: [
+       "ホテル",
+       "施設",
+       "設備",
+       "アメニティ",
+       "部屋",
+       "客室",
+       "宿泊",
+       "予約",
+       "料金",
+       "サービス",
+       "アーバンハーモニー",
+       "概要",
+       "説明"
+     ],
+     text: "ホテルの基本情報について",
+     answer: "アーバンハーモニー東京は、モダンな設計と日本の伝統美が融合した4つ星ホテルです。\n\n【基本情報】\n・全120室の客室（スタンダード、デラックス、スイート）\n・全室無料Wi-Fi完備\n・24時間フロントデスク対応\n・多言語対応スタッフ（日本語、英語、中国語、韓国語）\n\n【施設・サービス】\n・レストラン「KIZUNA」（和食）\n・カフェ＆バー「TOKYO VIEW」（15階）\n・フィットネスセンター（24時間営業）\n・ビジネスセンター\n・ランドリーサービス\n・コンシェルジュサービス\n・荷物預かりサービス\n\n【客室アメニティ】\n・高速インターネット\n・49インチ液晶テレビ\n・冷蔵庫\n・電気ケトル\n・セーフティボックス\n・バスローブとスリッパ\n・高品質アメニティセット\n\n何か具体的にお知りになりたい点はございますか？"
+   },
+   {
+     id: "check_in_out",
+     keywords: [
+       "チェックイン",
+       "チェックアウト",
+       "到着",
+       "出発",
+       "レイトチェックアウト",
+       "アーリーチェックイン",
+       "時間",
+       "何時"
+     ],
+     text: "チェックイン・チェックアウト時間",
+     answer: "アーバンハーモニー東京のチェックイン・チェックアウト情報です：\n\n【標準時間】\n・チェックイン：15:00～24:00\n・チェックアウト：11:00まで\n\n【特別オプション】\n・アーリーチェックイン：12:00から可能（空室状況による・追加料金3,000円）\n・レイトチェックアウト：14:00まで延長可能（空室状況による・追加料金3,000円）\n\n【その他】\n・24時間フロントデスクで対応しております\n・チェックイン前、チェックアウト後も荷物のお預かりが可能です\n・事前にご連絡いただければ、深夜到着にも対応いたします\n\nご質問やご要望がございましたら、お気軽にフロントまでお申し付けください。"
+   },
+   {
+     id: "wifi",
+     keywords: ["Wi-Fi", "WiFi", "インターネット", "ネット", "接続", "無線", "LAN", "パスワード", "繋がら", "速度"],
+     text: "Wi-Fi情報",
+     answer: "アーバンハーモニー東京のWi-Fi情報をご案内します：\n\n【客室内Wi-Fi】\n・全客室で高速Wi-Fiを無料でご利用いただけます\n・SSID: UrbanHarmony_Room\n・パスワード: お部屋のキーカードホルダーに記載されています\n・通信速度: 下り最大100Mbps\n\n【パブリックエリアWi-Fi】\n・ロビー、レストラン、カフェ、ビジネスセンターなどの共用エリアでもWi-Fiをご利用いただけます\n・SSID: UrbanHarmony_Public\n・パスワード: フロントデスクでお尋ねください\n\n【接続トラブルの場合】\n・デバイスの再起動をお試しください\n・フロントデスクにお問い合わせいただければ、技術スタッフがサポートいたします\n・客室内の電話機からダイヤル「9」でITサポートにつながります\n\n【セキュリティ】\n・当ホテルのWi-Fiは暗号化されていますが、オンラインバンキングなどの重要な情報を扱う場合は、VPNのご使用をお勧めします\n\n【有線LAN】\n・デスクタイプの客室では有線LANもご利用いただけます（LANケーブルはデスク引き出し内）\n\nその他インターネット接続に関するご質問は、フロントデスクまでお気軽にお問い合わせください。"
+   },
+   {
+     id: "facilities",
+     keywords: [
+       "施設",
+       "設備",
+       "フィットネス",
+       "ジム",
+       "ビジネス",
+       "会議",
+       "ランドリー",
+       "コインランドリー",
+       "駐車場",
+       "サービス"
+     ],
+     text: "ホテル内の施設・サービス",
+     answer: "アーバンハーモニー東京の施設・サービス情報をご案内します：\n\n【フィットネスセンター】\n・場所：14階\n・営業時間：24時間\n・設備：最新のカーディオマシン、ウェイトマシン、フリーウェイト\n・利用料：宿泊者無料\n・タオル、ミネラルウォーター完備\n\n【ビジネスセンター】\n・場所：1階ロビー横\n・営業時間：7:00～22:00\n・設備：パソコン、プリンター、コピー機、スキャナー、文房具\n・サービス：FAX送受信、コピー、プリントアウト（有料）\n\n【会議室・宴会場】\n・場所：3階\n・「桜」（最大40名）、「藤」（最大20名）、「梅」（最大15名）\n・予約制（フロントまたは公式サイトから予約可能）\n\n【ランドリーサービス】\n・当日仕上げ：午前10時までの受付で当日18時までに返却\n・通常料金：ワイシャツ 800円～、ブラウス 900円～、スーツ 2,000円～\n・エクスプレスサービス（50%追加料金）も可能\n\n【コインランドリー】\n・場所：13階\n・営業時間：24時間\n・洗濯機：1回300円、乾燥機：30分100円\n・洗剤自動投入\n\n【駐車場】\n・収容台数：20台（先着順）\n・料金：1泊3,000円（チェックイン日14:00～チェックアウト日12:00）\n・高さ制限：1.55mまで\n・事前予約不可\n\n【その他のサービス】\n・荷物預かり（チェックイン前・チェックアウト後も可能）\n・宅配便の受付・発送\n・タクシー手配\n・観光案内\n・レストラン予約\n・ベビーベッド（無料・要予約）\n・車椅子貸出（無料）\n\nその他ご要望がございましたら、フロントデスクまでお気軽にお申し付けください。"
+   },
+   {
+     id: "payment",
+     keywords: [
+       "支払い",
+       "決済",
+       "料金",
+       "クレジットカード",
+       "現金",
+       "QRコード",
+       "電子マネー",
+       "チェックアウト",
+       "領収書",
+       "請求書"
+     ],
+     text: "支払い方法",
+     answer: "アーバンハーモニー東京でご利用いただける支払い方法をご案内します：\n\n【お支払い方法】\n・クレジットカード：VISA、Mastercard、JCB、American Express、Diners Club、UnionPay（銀聯）\n・現金：日本円\n・電子マネー：Suica、PASMO、楽天Edy、nanaco、WAON\n・QR決済：PayPay、LINE Pay、楽天ペイ、Alipay、WeChat Pay\n\n【デポジット（保証金）】\n・チェックイン時に滞在中の付帯利用のため、1泊につき10,000円または相当額のデポジットが必要です\n・クレジットカードでの事前承認、または現金でのお預かりとなります\n・未使用分はチェックアウト時に返金いたします\n\n【チェックアウト時の精算】\n・チェックアウト時にフロントデスクで精算\n・エクスプレスチェックアウト（事前精算）も可能です（前日までにフロントにお申し出ください）\n\n【領収書・請求書】\n・領収書はチェックアウト時に発行可能\n・宛名や但し書きなど、ご希望の記載内容をお知らせください\n・法人向け請求書払いをご希望の場合は、事前にご連絡ください（審査があります）\n\n【外貨両替】\n・フロントデスクで主要外貨の日本円への両替サービスを行っています（手数料あり）\n・対応通貨：米ドル、ユーロ、中国元、韓国ウォン、台湾ドル、香港ドル\n\nお支払いに関するご質問は、フロントデスクまでお気軽にお問い合わせください。"
+   },
+   {
+     id: "room_types",
+     keywords: [
+       "部屋",
+       "客室",
+       "タイプ",
+       "種類",
+       "スタンダード",
+       "デラックス",
+       "スイート",
+       "シングル",
+       "ダブル",
+       "ツイン",
+       "広さ",
+       "眺望",
+       "ビュー"
+     ],
+     text: "客室タイプ",
+     answer: "アーバンハーモニー東京の客室タイプをご案内します：\n\n【スタンダードルーム】\n・広さ：22～25㎡\n・ベッド：シングル（幅120cm）×2、またはダブル（幅160cm）×1\n・眺望：シティビュー\n・階数：5～10階\n・定員：1～2名\n・料金目安：20,000円～/泊（季節変動あり）\n\n【デラックスルーム】\n・広さ：30～35㎡\n・ベッド：ダブル（幅180cm）×1、またはツイン（幅120cm）×2\n・眺望：シティビュー/プレミアムシティビュー\n・階数：11～14階\n・定員：2～3名\n・料金目安：28,000円～/泊（季節変動あり）\n\n【エグゼクティブルーム】\n・広さ：35～40㎡\n・ベッド：キング（幅200cm）×1、またはツイン（幅120cm）×2\n・眺望：プレミアムシティビュー\n・階数：15～17階\n・特典：エグゼクティブラウンジ利用可、朝食無料、イブニングカクテル\n・定員：2～3名\n・料金目安：35,000円～/泊（季節変動あり）\n\n【ジュニアスイート】\n・広さ：45～50㎡\n・ベッド：キング（幅200cm）×1\n・構成：ベッドルーム+リビングエリア\n・眺望：プレミアムシティビュー\n・階数：15～17階\n・特典：エグゼクティブラウンジ利用可、朝食無料、イブニングカクテル\n・定員：2～3名\n・料金目安：45,000円～/泊（季節変動あり）\n\n【プレジデンシャルスイート】\n・広さ：80㎡\n・ベッド：キング（幅200cm）×1\n・構成：ベッドルーム+リビングルーム+ダイニングエリア\n・眺望：パノラマシティビュー\n・階数：18階（最上階）\n・特典：エグゼクティブラウンジ利用可、朝食無料、イブニングカクテル、空港送迎\n・定員：2～4名\n・料金目安：80,000円～/泊（季節変動あり）\n\n全室共通の設備：高速Wi-Fi、49インチ液晶テレビ、ミニバー、セーフティボックス、バスローブ、スリッパ、高品質アメニティ\n\n客室のご予約やアップグレードについては、フロントデスクまでお気軽にお問い合わせください。"
+   }
+ ];
+
+ // 食事関連情報
+ const diningInfo = [
+   {
+     id: "restaurant",
+     keywords: [
+       "レストラン",
+       "食事",
+       "朝食",
+       "ランチ",
+       "ディナー",
+       "和食",
+       "洋食",
+       "中華",
+       "イタリアン",
+       "フレンチ",
+       "カフェ",
+       "バー",
+       "おすすめ",
+       "予約"
+     ],
+     text: "ホテル内レストラン情報",
+     answer: "アーバンハーモニー東京のレストラン情報をご案内します：\n\n【レストラン「KIZUNA」（2階）】\n・営業時間：朝食 6:30～10:00、ランチ 11:30～14:30、ディナー 17:30～22:00\n・料理：モダン和食と季節の日本料理\n・朝食ビュッフェ：和洋折衷の豊富なメニュー（宿泊者2,800円、外来3,200円）\n・ランチ：1,800円～（コース）、単品メニューも充実\n・ディナー：5,000円～（コース）、アラカルトメニューも提供\n・個室あり（要予約）\n\n【カフェ＆バー「TOKYO VIEW」（15階）】\n・営業時間：10:00～24:00（ラストオーダー 23:30）\n・東京の景色を一望できる開放的な空間\n・軽食、デザート、各種ドリンク、カクテルを提供\n・アフタヌーンティー：14:00～17:00（3,800円～、要予約）\n・バータイム：17:00～24:00（カクテル各種800円～）\n\n【ルームサービス】\n・営業時間：6:30～22:00\n・朝食、軽食、メインディッシュ、デザート、ドリンクなど\n\n【予約方法】\n・フロントデスク、客室内電話、または公式サイトから予約可能\n・外部予約サイト（TableCheck等）からも予約可能\n\n特別な日のお祝いや、食事制限などございましたら、お気軽にご相談ください。"
+   },
+   {
+     id: "breakfast",
+     keywords: [
+       "朝食",
+       "モーニング",
+       "ブレックファスト",
+       "朝ごはん",
+       "朝ご飯",
+       "時間",
+       "料金",
+       "メニュー",
+       "ビュッフェ",
+       "ルームサービス"
+     ],
+     text: "朝食情報",
+     answer: "アーバンハーモニー東京の朝食情報をご案内します：\n\n【朝食の種類】\n・レストラン「KIZUNA」での和洋ビュッフェ\n・ルームサービスでの朝食（アメリカン、コンチネンタル、和食）\n\n【レストラン朝食】\n・場所：2階 レストラン「KIZUNA」\n・時間：6:30～10:00（最終入店 9:30）\n・料金：宿泊者 2,800円、12歳以下 1,400円、5歳以下 無料\n・内容：和食・洋食の約50種類のビュッフェ\n  （焼きたてパン、オムレツステーション、季節のフルーツ、\n   和食、サラダバー、シリアル、ヨーグルト、ジュース各種など）\n\n【ルームサービス朝食】\n・時間：6:30～11:00\n・料金：アメリカンブレックファスト 3,200円\n      コンチネンタルブレックファスト 2,600円\n      和朝食 3,200円\n・注文方法：前日22:00までにルームサービスメニューの朝食オーダー用紙にご記入の上、ドアノブにお掛けください\n\n【朝食パッケージ】\n・ご予約時に朝食付きプランをお選びいただくと、通常よりお得な料金でご利用いただけます\n\n【その他】\n・食物アレルギーがある場合は、スタッフにお申し付けください\n・混雑状況により、お席のご案内までお待ちいただく場合がございます\n\n朝食についてのその他のご質問は、フロントデスクまでお気軽にお問い合わせください。"
+   }
+ ];
+
+ // アクセス関連情報
+ const accessInfo = [
+   {
+     id: "location",
+     keywords: ["場所", "住所", "どこ", "位置", "地図", "アクセス", "最寄り", "近く"],
+     text: "ホテルの場所と最寄り駅",
+     answer: "アーバンハーモニー東京の所在地と最寄り駅の情報です：\n\n【住所】\n〒104-0061\n東京都中央区銀座5-6-7\n\n【最寄り駅】\n・東京メトロ銀座線「銀座」駅 A3出口から徒歩3分\n・東京メトロ丸ノ内線「銀座」駅 B5出口から徒歩4分\n・東京メトロ日比谷線「銀座」駅 C1出口から徒歩5分\n・JR「有楽町」駅 銀座口から徒歩8分\n\n【周辺の目印】\n・三越銀座店の向かい\n・銀座三丁目交差点から銀座五丁目方面へ徒歩2分\n・銀座中央通り沿い\n\n道に迷われた場合は、お電話いただければスタッフがご案内いたします。\n電話番号：03-1234-5678"
+   },
+   {
+     id: "airport_access",
+     keywords: [
+       "空港",
+       "羽田",
+       "成田",
+       "アクセス",
+       "行き方",
+       "リムジン",
+       "バス",
+       "電車",
+       "タクシー",
+       "何分",
+       "時間"
+     ],
+     text: "空港からのアクセス",
+     answer: "空港からアーバンハーモニー東京へのアクセス方法をご案内します：\n\n【羽田空港から】\n・電車：東京モノレール→JR山手線→東京メトロ銀座線（約45分、1,000円程度）\n・リムジンバス：羽田空港→銀座駅前（約40分、1,100円）\n・タクシー：約30分（約8,000円～10,000円）\n\n【成田空港から】\n・電車：成田エクスプレス→JR山手線→東京メトロ銀座線（約90分、3,000円程度）\n・リムジンバス：成田空港→銀座駅前（約90分、3,100円）\n・タクシー：約90分（約20,000円～25,000円）\n\n【空港送迎サービス】\n・専用車送迎サービスもご用意しております（有料・要事前予約）\n・フロントまたは公式サイトからご予約ください\n\nご不明な点がございましたら、お気軽にお問い合わせください。"
+   },
+   {
+     id: "station_access",
+     keywords: [
+       "駅",
+       "東京駅",
+       "新宿駅",
+       "渋谷駅",
+       "品川駅",
+       "上野駅",
+       "アクセス",
+       "行き方",
+       "電車",
+       "地下鉄",
+       "バス"
+     ],
+     text: "主要駅からのアクセス",
+     answer: "主要駅からアーバンハーモニー東京へのアクセス方法をご案内します：\n\n【東京駅から】\n・JR山手線「有楽町」駅まで1駅（約2分）→徒歩8分\n・東京メトロ丸ノ内線「銀座」駅まで2駅（約4分）→徒歩4分\n・タクシー：約10分（約1,500円程度）\n\n【新宿駅から】\n・東京メトロ丸ノ内線「銀座」駅まで直通（約15分）→徒歩4分\n・JR山手線「有楽町」駅まで（約18分）→徒歩8分\n\n【渋谷駅から】\n・東京メトロ銀座線「銀座」駅まで直通（約16分）→徒歩3分\n・JR山手線「有楽町」駅まで（約20分）→徒歩8分\n\n【品川駅から】\n・JR山手線「有楽町」駅まで4駅（約10分）→徒歩8分\n・タクシー：約15分（約2,000円程度）\n\n【上野駅から】\n・東京メトロ銀座線「銀座」駅まで直通（約11分）→徒歩3分\n・JR山手線「有楽町」駅まで4駅（約10分）→徒歩8分\n\nご不明な点がございましたら、フロントデスクでもご案内しております。"
+   },
+   {
+     id: "sightseeing_access",
+     keywords: [
+       "観光",
+       "観光地",
+       "浅草",
+       "スカイツリー",
+       "東京タワー",
+       "渋谷",
+       "新宿",
+       "上野",
+       "秋葉原",
+       "お台場",
+       "行き方",
+       "アクセス",
+       "何分"
+     ],
+     text: "観光地へのアクセス",
+     answer: "アーバンハーモニー東京から主要観光地へのアクセス方法をご案内します：\n\n【浅草・浅草寺】\n・東京メトロ銀座線「銀座」駅から「浅草」駅まで直通（約15分）\n\n【東京スカイツリー】\n・東京メトロ銀座線「銀座」駅から「浅草」駅まで→都営浅草線「押上」駅へ乗り換え（約25分）\n\n【東京タワー】\n・東京メトロ日比谷線「銀座」駅から「神谷町」駅まで（約7分）→徒歩10分\n・タクシー：約10分（約1,500円程度）\n\n【渋谷・渋谷スクランブル交差点】\n・東京メトロ銀座線「銀座」駅から「渋谷」駅まで直通（約16分）\n\n【新宿・新宿御苑】\n・東京メトロ丸ノ内線「銀座」駅から「新宿」駅まで直通（約15分）\n\n【上野公園・上野動物園】\n・東京メトロ銀座線「銀座」駅から「上野」駅まで直通（約11分）\n\n【秋葉原】\n・JR山手線「有楽町」駅から「秋葉原」駅まで3駅（約7分）\n\n【お台場】\n・JR山手線「有楽町」駅から「新橋」駅へ→ゆりかもめ「台場」駅まで（約25分）\n\n観光スポットへの詳細な行き方や観光情報は、フロントデスクでもご案内しております。観光マップも無料でご用意しています。"
+   }
+ ];
+
+ // 周辺施設情報
+ const surroundingInfo = [
+   {
+     id: "nearby_restaurant",
+     keywords: [
+       "周辺",
+       "近く",
+       "レストラン",
+       "飲食店",
+       "食事",
+       "ランチ",
+       "ディナー",
+       "和食",
+       "洋食",
+       "中華",
+       "イタリアン",
+       "フレンチ",
+       "おすすめ",
+       "人気"
+     ],
+     text: "周辺のレストラン情報",
+     answer: "アーバンハーモニー東京周辺のおすすめレストラン情報をご案内します：\n\n【和食】\n・「銀座 久兵衛」：高級寿司（徒歩3分）\n・「つる中」：老舗天ぷら（徒歩5分）\n・「銀座 しま田」：上質な懐石料理（徒歩4分）\n\n【洋食・フレンチ】\n・「ラ・ベットラ」：人気イタリアン（徒歩6分）\n・「レストラン パッション」：本格フレンチ（徒歩7分）\n・「ウルフギャング・ステーキハウス」：高級ステーキ（徒歩5分）\n\n【カジュアル】\n・「銀座 篝」：人気ラーメン店（徒歩4分）\n・「銀座 天一」：老舗中華（徒歩3分）\n・「マロニエゲート銀座2」：レストランフロア（徒歩2分）\n\n【カフェ】\n・「カフェ・ド・ランブル」：老舗喫茶店（徒歩3分）\n・「スターバックス 銀座マロニエ通り店」：広々とした店内（徒歩2分）\n・「資生堂パーラー」：クラシックな雰囲気のカフェ（徒歩5分）\n\n【バー】\n・「バー高野」：クラシックカクテルの名店（徒歩6分）\n・「スター・バー」：世界的に有名なバー（徒歩7分）\n\nレストランの予約はフロントデスクでもお手伝いいたします。混雑状況や営業時間の確認、特別なリクエストなどございましたら、お気軽にお申し付けください。"
+   },
+   {
+     id: "convenience",
+     keywords: [
+       "コンビニ",
+       "スーパー",
+       "ドラッグストア",
+       "薬局",
+       "ATM",
+       "銀行",
+       "郵便局",
+       "買い物",
+       "ショッピング",
+       "近く",
+       "周辺"
+     ],
+     text: "周辺の便利施設",
+     answer: "アーバンハーモニー東京周辺の便利な施設をご案内します：\n\n【コンビニエンスストア】\n・セブンイレブン 銀座5丁目店（徒歩1分）\n・ファミリーマート 銀座マロニエ通り店（徒歩3分）\n・ローソン 銀座4丁目店（徒歩4分）\n\n【スーパーマーケット】\n・成城石井 マロニエゲート銀座店（徒歩2分）\n・明治屋 銀座店（徒歩6分）\n\n【ドラッグストア・薬局】\n・マツモトキヨシ 銀座店（徒歩3分）\n・ココカラファイン 銀座店（徒歩5分）\n\n【ATM・銀行】\n・三菱UFJ銀行 銀座支店（徒歩4分）\n・みずほ銀行 銀座支店（徒歩5分）\n・セブン銀行ATM（セブンイレブン銀座5丁目店内・徒歩1分）\n\n【郵便局】\n・銀座郵便局（徒歩7分）\n\n【その他】\n・銀座三越（徒歩2分）\n・松屋銀座（徒歩5分）\n・GINZA SIX（徒歩8分）\n・東急プラザ銀座（徒歩6分）\n\nその他にもご要望に応じて、周辺施設をご案内いたします。フロントデスクでは詳細な地図もご用意しております。"
+   },
+   {
+     id: "shopping",
+     keywords: ["ショッピング", "買い物", "デパート", "百貨店", "ブランド", "ショップ", "店", "銀座", "おすすめ"],
+     text: "周辺のショッピング情報",
+     answer: "アーバンハーモニー東京周辺のショッピング情報をご案内します：\n\n【百貨店・商業施設】\n・銀座三越：高級百貨店（徒歩2分）\n・松屋銀座：幅広い品揃えの百貨店（徒歩5分）\n・GINZA SIX：最新の高級商業施設（徒歩8分）\n・東急プラザ銀座：トレンディな商業施設（徒歩6分）\n・マロニエゲート：カジュアルなショッピングモール（徒歩2分）\n\n【ブランドショップ】\n・銀座中央通り：シャネル、ルイ・ヴィトン、エルメス、グッチなど世界的ブランドが集結（徒歩1～10分）\n・銀座和光：高級時計・宝飾品（徒歩7分）\n・アップルストア銀座：最新のApple製品（徒歩6分）\n\n【専門店】\n・伊東屋：文房具の老舗（徒歩5分）\n・銀座 蔦屋書店：洗練された書店（徒歩9分）\n・ミキモト：真珠の老舗（徒歩6分）\n・資生堂ザ・ストア：化粧品の本店（徒歩5分）\n\n【お土産・日本伝統品】\n・銀座 菊廼舎：老舗和菓子（徒歩4分）\n・銀座 木屋：日本刀発祥の老舗刃物店（徒歩6分）\n・虎屋：老舗和菓子（徒歩7分）\n・箔座 銀座店：金箔製品（徒歩5分）\n\n銀座エリアは日本を代表するショッピングエリアで、ホテルから徒歩圏内に数百のショップがございます。特定のブランドやアイテムをお探しの場合は、フロントデスクでもご案内いたします。"
+   }
+ ];
+
+ // その他の情報
+ const otherInfo = [
+   {
+     id: "greeting",
+     keywords: ["こんにちは", "こんばんは", "おはよう", "やあ", "ハロー", "hello", "hi", "hey", "おーい", "おい"],
+     text: "挨拶",
+     answer: "こんにちは！アーバンハーモニー東京のコンシェルジュです。ホテルや周辺情報について何でもお気軽にお尋ねください。快適な東京滞在のお手伝いをいたします。"
+   },
+   {
+     id: "thanks",
+     keywords: ["ありがとう", "感謝", "助かる", "thank", "thanks", "thx"],
+     text: "お礼",
+     answer: "どういたしまして！お役に立てて嬉しいです。他にも質問があれば、いつでもお気軽にお尋ねください。アーバンハーモニー東京でのご滞在が素晴らしいものになりますように。"
+   },
+   {
+     id: "bye",
+     keywords: ["さようなら", "バイバイ", "じゃあね", "また", "bye", "goodbye", "cya"],
+     text: "別れの挨拶",
+     answer: "またいつでもお気軽にご質問ください。アーバンハーモニー東京でのご滞在をお楽しみください！"
+   },
+   {
+     id: "help",
+     keywords: [
+       "ヘルプ",
+       "質問",
+       "何ができる",
+       "使い方",
+       "機能",
+       "できること",
+       "案内",
+       "どんな",
+       "答えられる",
+       "教えて",
+       "何が",
+       "何を",
+       "どのような",
+       "どういう",
+       "どうやって",
+       "できますか",
+       "わかる",
+       "知りたい",
+       "説明",
+       "何に"
+     ],
+     text: "このチャットボットでできること",
+     answer: "このチャットボットでは、以下のような情報をご案内できます：\n\n・ホテルの基本情報（チェックイン/アウト時間、施設案内など）\n・客室タイプや設備について\n・ホテル内のレストランやサービス\n・周辺のレストランやショップ情報\n・主要駅や空港からのアクセス方法\n・東京の観光スポットへの行き方\n・周辺の便利な施設（コンビニ、ATMなど）\n・Wi-Fi接続方法\n・支払い方法\n\n何か具体的にお知りになりたいことがございましたら、お気軽にお尋ねください。24時間いつでもご質問にお答えします。"
+   }
+ ];
+
+ // すべてのQAデータを結合
+ const allQAData = [
+   ...hotelInfo,
+   ...diningInfo,
+   ...accessInfo,
+   ...surroundingInfo,
+   ...otherInfo
+ ];
+
+ // DOMが完全に読み込まれた後に実行
+ document.addEventListener("DOMContentLoaded", () => {
+   // データを直接使用
+   window.chatbotConfig = {
+     ...chatbotData,
+     qaDatabase: allQAData,
+     suggestedQuestions: [
+       "チェックイン・チェックアウト時間は？",
+       "最寄りの駅は？",
+       "周辺のレストランは？",
+       "東京駅からのアクセス方法は？",
+       "浅草寺への行き方は？"
+     ]
+   };
+   initChatbot();
+ });
+
+ // 翻訳機能
+ async function translateText(text, targetLanguage = 'ja') {
+   try {
+     const response = await fetch('/api/translate', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify({ text, targetLanguage }),
+     });
+
+     if (!response.ok) {
+       throw new Error(`Translation request failed: ${response.status}`);
+     }
+
+     const data = await response.json();
+     return data;
+   } catch (error) {
+     console.error('Translation error:', error);
+     return { 
+       translatedText: text, 
+       sourceLanguage: 'unknown', 
+       targetLanguage: targetLanguage,
+       error: error.message
+     };
+   }
+ }
+
+ function initChatbot() {
+   if (document.querySelector(".chatbot-container")) {
+     return;
+   }
+
+   const chatbotConfig = window.chatbotConfig;
+
+   // チャットボットのHTML構造を作成
+   const chatbotHTML = `
+     <div class="chatbot-container">
+       <div class="chatbot-button">
+         <div class="chatbot-icon">
+           <div class="chatbot-speech-bubble">
+             <div class="chatbot-dots">
+               <div class="chatbot-dot"></div>
+               <div class="chatbot-dot"></div>
+               <div class="chatbot-dot"></div>
+             </div>
+           </div>
+         </div>
+       </div>
+       <div class="chatbot-window">
+         <div class="chatbot-header">
+           <div>${chatbotConfig.name}</div>
+           <div class="chatbot-close">×</div>
+         </div>
+         <div class="chatbot-messages"></div>
+         <div class="chatbot-input-container">
+           <input type="text" class="chatbot-input" placeholder="メッセージを入力...">
+           <button class="chatbot-send-button">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <line x1="22" y1="2" x2="11" y2="13"></line>
+               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+             </svg>
+           </button>
+         </div>
+       </div>
+     </div>
+   `;
+
+   // チャットボットをページに追加
+   const chatbotContainer = document.createElement("div");
+   chatbotContainer.innerHTML = chatbotHTML;
+   document.body.appendChild(chatbotContainer);
+
+   // 要素の参照を取得
+   const chatbotButton = document.querySelector(".chatbot-button");
+   const chatbotWindow = document.querySelector(".chatbot-window");
+   const chatbotClose = document.querySelector(".chatbot-close");
+   const chatbotMessages = document.querySelector(".chatbot-messages");
+   const chatbotInput = document.querySelector(".chatbot-input");
+   const chatbotSendButton = document.querySelector(".chatbot-send-button");
+
+   // 会話の履歴を保存
+   const conversationHistory = [];
+   // 前回の質問と回答を記録
+   let lastQuestion = "";
+   let lastAnswer = "";
+   // ユーザーの言語を記録
+   let userLanguage = "ja";
+
+   // チャットボットの開閉
+   chatbotButton.addEventListener("click", () => {
+     chatbotWindow.style.display = "flex";
+
+     // 初回表示時にメッセージを表示
+     if (chatbotMessages.children.length === 0) {
+       initChat();
+     }
+   });
+
+   // 閉じるボタンのクリックイベント
+   chatbotClose.addEventListener("click", (e) => {
+     e.stopPropagation();
+     chatbotWindow.style.display = "none";
+   });
+
+   // 送信ボタンのクリックイベント
+   chatbotSendButton.addEventListener("click", handleUserInput);
+
+   // 入力フィールドのEnterキーイベント
+   chatbotInput.addEventListener("keypress", (e) => {
+     if (e.key === "Enter") {
+       handleUserInput();
+     }
+   });
+
+   // ユーザー入力を処理
+   async function handleUserInput() {
+     const userInput = chatbotInput.value.trim();
+     if (userInput === "") return;
+
+     // ユーザーの質問を表示
+     addUserMessage(userInput);
+     chatbotInput.value = "";
+
+     // 会話履歴に追加
+     conversationHistory.push({ role: "user", content: userInput });
+     lastQuestion = userInput;
+
+     // 入力中表示を追加
+     showTypingIndicator();
+
+     try {
+       // 言語を検出して翻訳
+       const translationResult = await translateText(userInput, 'ja');
+       
+       // 言語を記録
+       if (translationResult.sourceLanguage && translationResult.sourceLanguage !== 'ja') {
+         userLanguage = translationResult.sourceLanguage;
+       }
+       
+       // 翻訳されたテキストで回答を検索
+       const translatedInput = translationResult.translatedText;
+       
+       // 回答を検索
+       const answer = findAnswer(translatedInput);
+       
+       // 回答を翻訳（日本語以外の言語が検出された場合）
+       let translatedAnswer = answer;
+       if (userLanguage !== 'ja') {
+         const answerTranslation = await translateText(answer, userLanguage);
+         translatedAnswer = answerTranslation.translatedText;
+       }
+       
+       // 入力中表示を削除
+       hideTypingIndicator();
+       
+       // 翻訳された回答を表示
+       addBotMessage(translatedAnswer);
+       lastAnswer = answer; // 元の日本語の回答を保存
+       
+       // 会話履歴に追加
+       conversationHistory.push({ role: "bot", content: translatedAnswer });
+     } catch (error) {
+       console.error('Error processing user input:', error);
+       
+       // エラーの場合、入力中表示を削除して元の方法で回答
+       hideTypingIndicator();
+       
+       // 回答を検索して表示（翻訳なし）
+       const answer = findAnswer(userInput);
+       addBotMessage(answer);
+       lastAnswer = answer;
+       
+       // 会話履歴に追加
+       conversationHistory.push({ role: "bot", content: answer });
+     }
+   }
+
+   // 質問から回答を検索
+   function findAnswer(question) {
+     // 質問を小文字に変換
+     const normalizedQuestion = question.toLowerCase();
+
+     // 会話の文脈を考慮
+     const context = getConversationContext();
+
+     // 最も関連性の高い回答を検索
+     let bestMatch = null;
+     let highestScore = 0;
+     let secondBestMatch = null;
+     let secondHighestScore = 0;
+
+     // 特定のキーワードに対する直接的な回答を検索
+     for (const qa of chatbotConfig.qaDatabase) {
+       // 基本的な関連性スコアを計算
+       let score = calculateRelevanceScore(normalizedQuestion, qa.keywords, qa.text, qa.id);
+
+       // 文脈に基づいてスコアを調整
+       if (context && context.topic) {
+         // 同じトピックの場合はボーナス
+         if (qa.id === context.topic) {
+           score += 0.2;
+         }
+
+         // 関連トピックの場合も少しボーナス
+         if (isRelatedTopic(qa.id, context.topic)) {
+           score += 0.1;
+         }
+       }
+
+       // 前回と同じ回答を避ける（スコアが僅差の場合）
+       if (qa.answer === lastAnswer && score < 0.8) {
+         score -= 0.1;
+       }
+
+       if (score > highestScore) {
+         secondBestMatch = bestMatch;
+         secondHighestScore = highestScore;
+         highestScore = score;
+         bestMatch = qa;
+       } else if (score > secondHighestScore) {
+         secondHighestScore = score;
+         secondBestMatch = qa;
+       }
+     }
+
+     // スコアが一定以上なら回答を返す
+     if (highestScore > 0.01) { // 非常に低いしきい値に設定
+       // スコアが僅差の場合、バリエーションを持たせるために時々2番目の回答を使用
+       if (secondBestMatch && highestScore - secondHighestScore < 0.2 && Math.random() < 0.3) {
+         return secondBestMatch.answer;
+       }
+       return bestMatch.answer;
+     } else {
+       // 特定のキーワードが見つからない場合、一般的な質問として処理
+       return handleGeneralQuestion(normalizedQuestion);
+     }
+   }
+
+   // 関連トピックかどうかを判定
+   function isRelatedTopic(topicA, topicB) {
+     const relatedTopics = {
+       hotel_info: ["check_in_out", "location", "facilities", "room_types"],
+       check_in_out: ["hotel_info", "payment"],
+       location: ["station_access", "airport_access", "sightseeing_access", "convenience"],
+       airport_access: ["location", "station_access"],
+       station_access: ["location", "airport_access", "sightseeing_access"],
+       sightseeing_access: ["location", "station_access"],
+       restaurant: ["nearby_restaurant", "breakfast"],
+       nearby_restaurant: ["restaurant", "convenience"],
+       convenience: ["nearby_restaurant", "shopping", "location"],
+       shopping: ["convenience", "nearby_restaurant"],
+       wifi: ["hotel_info", "facilities"],
+       breakfast: ["restaurant", "hotel_info"],
+       facilities: ["hotel_info", "wifi"],
+       payment: ["check_in_out", "hotel_info"],
+       room_types: ["hotel_info", "facilities"],
+       greeting: ["help", "hotel_info"],
+       thanks: ["greeting", "bye"],
+       bye: ["thanks"],
+       help: ["hotel_info", "greeting"],
+     };
+
+     return relatedTopics[topicA] && relatedTopics[topicA].includes(topicB);
+   }
+
+   // 一般的な質問を処理
+   function handleGeneralQuestion(question) {
+     // 特定のキーワードを含む質問に対する直接的な回答
+     const directMatches = {
+       "住所": "location",
+       "場所": "location",
+       "どこ": "location",
+       "アクセス": "location",
+       "行き方": "location",
+       "空港": "airport_access",
+       "羽田": "airport_access",
+       "成田": "airport_access",
+       "チェックイン": "check_in_out",
+       "チェックアウト": "check_in_out",
+       "朝食": "breakfast",
+       "レストラン": "restaurant",
+       "食事": "restaurant",
+       "wi-fi": "wifi",
+       "wifi": "wifi",
+       "インターネット": "wifi",
+       "部屋": "room_types",
+       "客室": "room_types",
+       "支払い": "payment",
+       "料金": "payment",
+       "施設": "facilities",
+       "設備": "facilities",
+       "コンビニ": "convenience",
+       "周辺": "convenience",
+       "近く": "convenience",
+       "ショッピング": "shopping",
+       "買い物": "shopping"
+     };
+
+     // 質問に含まれるキーワードを検索
+     for (const [keyword, id] of Object.entries(directMatches)) {
+       if (question.includes(keyword)) {
+         const answer = findQAByID(id);
+         if (answer) return answer;
+       }
+     }
+
+     // 短い質問や単語のみの場合、関連するトピックを探す
+     for (const qa of chatbotConfig.qaDatabase) {
+       // IDに一致するか確認
+       if (qa.id.toLowerCase().includes(question) || question.includes(qa.id.toLowerCase())) {
+         return qa.answer;
+       }
+
+       // テキストにも一致するか確認
+       if (qa.text.toLowerCase().includes(question) || question.includes(qa.text.toLowerCase())) {
+         return qa.answer;
+       }
+     }
+
+     // 最後の手段として、ホテル情報を返す
+     const hotelInfo = findQAByID("hotel_info");
+     if (hotelInfo) {
+       return hotelInfo;
+     }
+
+     return chatbotConfig.fallbackMessage;
+   }
+
+   // IDからQAを検索
+   function findQAByID(id) {
+     for (const qa of chatbotConfig.qaDatabase) {
+       if (qa.id === id) {
+         return qa.answer;
+       }
+     }
+     return chatbotConfig.fallbackMessage;
+   }
+
+   // 会話の文脈を取得
+   function getConversationContext() {
+     if (conversationHistory.length < 2) return null;
+
+     // 直前のボットの回答を取得
+     const lastBotMessage = conversationHistory
+       .slice()
+       .reverse()
+       .find((msg) => msg.role === "bot");
+
+     if (!lastBotMessage) return null;
+
+     // ボットの回答に関連するトピックを特定
+     for (const qa of chatbotConfig.qaDatabase) {
+       if (lastBotMessage.content === qa.answer) {
+         return { topic: qa.id };
+       }
+     }
+
+     return null;
+   }
+
+   // 関連性スコアを計算（0〜1の値、1が最も関連性が高い）
+   function calculateRelevanceScore(question, keywords, text, id) {
+     let score = 0;
+     let maxKeywordScore = 0;
+
+     // 質問を小文字に変換し、句読点を削除
+     const normalizedQuestion = question.toLowerCase().replace(/[、。？！.,?!]/g, "");
+
+     // 質問を単語に分割
+     const questionWords = normalizedQuestion.split(/\s+/);
+
+     // 空港アクセスと周辺情報に関するキーワードの強化
+     const enhancedKeywords = {
+       "airport_access": ["空港", "羽田", "成田", "リムジン", "バス", "アクセス", "行き方"],
+       "location": ["住所", "場所", "どこ", "アクセス", "行き方"],
+       "nearby_restaurant": ["周辺", "近く", "レストラン", "食事", "ランチ", "ディナー"],
+       "convenience": ["周辺", "近く", "コンビニ", "スーパー", "ドラッグストア"],
+       "shopping": ["周辺", "近く", "ショッピング", "買い物", "デパート"]
+     };
+
+     // 強化されたキーワードを追加
+     if (enhancedKeywords[id]) {
+       for (const enhancedKeyword of enhancedKeywords[id]) {
+         if (normalizedQuestion.includes(enhancedKeyword)) {
+           score += 0.5;
+           maxKeywordScore = Math.max(maxKeywordScore, 0.5);
+         }
+       }
+     }
+
+     for (const keyword of keywords) {
+       let keywordScore = 0;
+
+       // 完全一致（最も高いスコア）
+       if (normalizedQuestion === keyword) {
+         keywordScore = 1.0;
+       }
+       // 質問にキーワードが含まれる
+       else if (normalizedQuestion.includes(keyword)) {
+         keywordScore = 0.8;
+       }
+       // キーワードが質問の先頭にある
+       else if (normalizedQuestion.startsWith(keyword)) {
+         keywordScore = 0.7;
+       }
+       // キーワードが質問の末尾にある
+       else if (normalizedQuestion.endsWith(keyword)) {
+         keywordScore = 0.6;
+       }
+       // 単語単位での一致
+       else if (questionWords.includes(keyword)) {
+         keywordScore = 0.5;
+       }
+       // 部分一致（キーワードが3文字以上の場合）
+       else if (keyword.length >= 3) {
+         // 語幹一致（例：「できる」と「できますか」）
+         if (normalizedQuestion.includes(keyword.substring(0, keyword.length - 1))) {
+           keywordScore = 0.4;
+         }
+         // 単語の一部が含まれる場合
+         else {
+           const keywordParts = keyword.split("");
+           let partMatches = 0;
+           for (const part of keywordParts) {
+             if (normalizedQuestion.includes(part)) {
+               partMatches++;
+             }
+           }
+
+           // 50%以上の文字が一致する場合
+           if (partMatches / keywordParts.length >= 0.5) {
+             keywordScore = 0.3;
+           }
+         }
+       }
+
+       // 最も高いキーワードスコアを記録
+       if (keywordScore > maxKeywordScore) {
+         maxKeywordScore = keywordScore;
+       }
+
+       // 累積スコアに加算
+       score += keywordScore;
+     }
+
+     // テキストとの一致も考慮
+     if (text && normalizedQuestion.includes(text.toLowerCase())) {
+       score += 0.5;
+       maxKeywordScore = Math.max(maxKeywordScore, 0.5);
+     }
+
+     // 最終スコアは最大キーワードスコアと累積スコアの組み合わせ
+     return Math.min(maxKeywordScore * 0.7 + (score / (keywords.length + 1)) * 0.3, 1);
+   }
+
+   // チャットを初期化
+   function initChat() {
+     // 多言語ウェルカムメッセージを表示
+     const welcomeMessage = `
+こんにちは！アーバンハーモニー東京のコンシェルジュです。ホテルや周辺情報について何でもお気軽にお尋ねください。
+
+Hello! I'm the concierge at Urban Harmony Tokyo. Please feel free to ask any questions about our hotel or the surrounding area.
+
+你好！我是Urban Harmony东京酒店的礼宾员。如有关于酒店或周边信息的任何问题，请随时询问。
+
+안녕하세요! Urban Harmony 도쿄의 컨시어지입니다. 호텔이나 주변 정보에 대해 언제든지 질문해 주세요.
+
+Bonjour ! Je suis le concierge d'Urban Harmony Tokyo. N'hésitez pas à me poser des questions sur notre hôtel ou les environs.
+
+Hallo! Ich bin der Concierge im Urban Harmony Tokyo. Bei Fragen zu unserem Hotel oder der Umgebung stehe ich Ihnen gerne zur Verfügung.
+`;
+
+     addBotMessage(welcomeMessage);
+
+     // 会話履歴に追加
+     conversationHistory.push({ role: "bot", content: welcomeMessage });
+   }
+
+   // ユーザーメッセージを追加
+   function addUserMessage(text) {
+     const messageElement = document.createElement("div");
+     messageElement.className = "chatbot-message chatbot-message-user";
+     messageElement.textContent = text;
+     chatbotMessages.appendChild(messageElement);
+     scrollToBottom();
+   }
+
+   // ボットメッセージを追加
+   function addBotMessage(text) {
+     const messageElement = document.createElement("div");
+     messageElement.className = "chatbot-message chatbot-message-bot";
+     messageElement.innerHTML = text.replace(/\n/g, "<br>");
+     chatbotMessages.appendChild(messageElement);
+     scrollToBottom();
+   }
+
+   // 入力中インジケーターを表示
+   function showTypingIndicator() {
+     const typingElement = document.createElement("div");
+     typingElement.className = "chatbot-typing";
+     typingElement.innerHTML = `
+       <div class="chatbot-typing-dot"></div>
+       <div class="chatbot-typing-dot"></div>
+       <div class="chatbot-typing-dot"></div>
+     `;
+     typingElement.id = "chatbot-typing-indicator";
+     chatbotMessages.appendChild(typingElement);
+     scrollToBottom();
+   }
+
+   // 入力中インジケーターを非表示
+   function hideTypingIndicator() {
+     const typingElement = document.getElementById("chatbot-typing-indicator");
+     if (typingElement) {
+       typingElement.remove();
+     }
+   }
+
+   // メッセージ欄を下にスクロール
+   function scrollToBottom() {
+     chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+   }
+ }
+ </script>
+</body>
+</html>
